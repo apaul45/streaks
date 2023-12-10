@@ -2,7 +2,7 @@ import { useState } from "react";
 import "./App.css";
 import { login, register, update } from "./api";
 import { User } from "./types";
-import { PopupDialog, UserDialog } from "./components";
+import { UserDialog } from "./components";
 import { BONUS, DAYS_FOR_BONUS, determineDays } from "./utils";
 
 function App() {
