@@ -57,7 +57,6 @@ router.post("/login", async (req: Request, res: Response) => {
     });
   }
 
-  await dbManager.updateUser(user.username, { lastSignIn: new Date() });
   res.status(200).json({ ...user });
 });
 

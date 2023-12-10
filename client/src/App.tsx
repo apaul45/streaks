@@ -2,7 +2,7 @@ import { useState } from "react";
 import "./App.css";
 import { login, register, update } from "./api";
 import { User } from "./types";
-import { NavigationBar, PopupDialog, UserDialog } from "./components";
+import { PopupDialog, UserDialog } from "./components";
 import { BONUS, DAYS_FOR_BONUS, determineDays } from "./utils";
 
 function App() {
@@ -21,7 +21,7 @@ function App() {
 
     if (days >= 1) {
       // @ts-ignore
-      signedInUser.streak = days == 1 ? user.streak + 1 : 0;
+      signedInUser.streak = days == 1 ? signedInUser.streak + 1 : 0;
 
       const reachedBonus = signedInUser.streak > 0 && signedInUser.streak % DAYS_FOR_BONUS == 0;
       signedInUser.coins += reachedBonus ? BONUS : 0;
@@ -33,21 +33,18 @@ function App() {
   };
 
   const handleUpdate = async (changes: any) => {
-    const res = await update(user?.username as string, changes);
-
-    if (res.status == 200) setUser({ ...user, ...changes } as User);
+    await update(user?.username as string, changes);
+    setUser({ ...user, ...changes } as User);
   };
 
   return (
-    <div className="h-screen">
-      <NavigationBar
+    <div className="h-screen flex flex-col items-center justify-center bg-[url(https://media.giphy.com/media/cmegx6SssTKmEFEcwj/giphy.gif)] bg-no-repeat bg-cover">
+      <UserDialog
         user={user}
+        updateUser={(changes: any) => handleUpdate(changes)}
         handleLogin={(username: string, password: string) => handleLogin(username, password)}
         handleRegister={(username: string, password: string) => handleRegister(username, password)}
       />
-      <br />
-
-      {user && <UserDialog user={user} updateUser={(changes: any) => handleUpdate(changes)} />}
     </div>
   );
 }
