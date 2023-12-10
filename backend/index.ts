@@ -7,7 +7,8 @@ dotenv.config();
 const app = express();
 
 const port = process.env.PORT;
-export const mongoStr = process.env.MONGO_CONNECTION;
+
+app.use(express.json({ limit: "100mb" }));
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);

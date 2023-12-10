@@ -1,3 +1,3 @@
-import { default as router } from "./streaks.ts";
+import { default as router } from "./streaks";
 
 export { router };

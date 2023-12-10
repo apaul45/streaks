@@ -1,12 +1,11 @@
 import mongoose from "mongoose";
 import { DbManager } from "../di";
-import { mongoStr } from "../..";
 import UserModel from "./models";
 
 export class MongoDbManager implements DbManager {
-  constructor() {
+  constructor(connectionString: string) {
     mongoose
-      .connect(mongoStr as string)
+      .connect(connectionString)
       .then(() => console.log("mongodb connected"))
       .catch((e) => console.error("Connection error", e.message));
   }
@@ -19,7 +18,7 @@ export class MongoDbManager implements DbManager {
       coins: 0,
     });
 
-    return user ? user.toJSON() : null;
+    return user ? user.toObject() : null;
   }
 
   async getUser(username: string) {
@@ -29,6 +28,7 @@ export class MongoDbManager implements DbManager {
   }
 
   async updateUser(username: string, body: any) {
+    console.log(body);
     const user = await UserModel.updateOne(
       { username: username },
       { $set: body }

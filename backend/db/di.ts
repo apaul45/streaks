@@ -1,4 +1,5 @@
 import { MongoDbManager } from "./mongodb/manager";
+import dotenv from "dotenv";
 
 export interface User {
   username: string;
@@ -11,7 +12,12 @@ export interface User {
 export interface DbManager {
   registerUser(username: string, password: string): Promise<User | null>;
   getUser(username: string): Promise<User | null>;
-  updateUser(username: string, body: any);
+  updateUser(username: string, body: any): Promise<void>;
 }
 
-export const dbManager: DbManager = new MongoDbManager();
+dotenv.config();
+const { MONGODB_CONNECTION } = process.env;
+
+export const dbManager: DbManager = new MongoDbManager(
+  MONGODB_CONNECTION as string
+);
