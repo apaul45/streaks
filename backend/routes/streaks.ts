@@ -5,7 +5,6 @@ import bcrypt from "bcrypt";
 const router = Router();
 
 router.post("/register", async (req: Request, res: Response) => {
-  console.log(req.body);
   const { username, password } = req.body;
 
   if (!username || !password) {
@@ -29,8 +28,7 @@ router.post("/register", async (req: Request, res: Response) => {
   const passwordHash = await bcrypt.hash(password, salt);
 
   user = await dbManager.registerUser(username, passwordHash);
-
-  res.status(200).json({ error: false, user });
+  res.status(200).json({ ...user });
 });
 
 router.post("/login", async (req: Request, res: Response) => {
@@ -59,39 +57,32 @@ router.post("/login", async (req: Request, res: Response) => {
     });
   }
 
-  res.status(200).json({ user });
+  await dbManager.updateUser(user.username, { lastSignIn: new Date() });
+  res.status(200).json({ ...user });
 });
 
-router.get(
-  "/get-user/:username",
-  async (request: Request, response: Response) => {
+router.get("/:username", async (request: Request, response: Response) => {
+  const { username } = request.params;
+
+  const user = await dbManager.getUser(username);
+
+  if (!user) {
+    return response.status(400).json({ message: "User not found" });
+  }
+
+  response.status(200).json({ ...user });
+});
+
+router.put("/:username", async (request: Request, response: Response) => {
+  try {
     const { username } = request.params;
+    const { changes } = request.body;
 
-    const user = await dbManager.getUser(username);
-
-    if (!user) {
-      return response.status(400).json({ message: "User not found" });
-    }
-
-    response.status(200).json({ user });
+    await dbManager.updateUser(username, changes);
+    response.status(200).json({ message: "Update was successful" });
+  } catch (e) {
+    return response.status(400).json({ message: "Error when updating. Please try again" });
   }
-);
-
-router.put(
-  "/update-user/:username",
-  async (request: Request, response: Response) => {
-    try {
-      const { username } = request.params;
-      const { changes } = request.body;
-
-      await dbManager.updateUser(username, changes);
-      response.status(200).json({ message: "Update was successful" });
-    } catch (e) {
-      return response
-        .status(400)
-        .json({ message: "Error when updating. Please try again" });
-    }
-  }
-);
+});
 
 export default router;

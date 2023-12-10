@@ -15,10 +15,11 @@ export class MongoDbManager implements DbManager {
       username: username,
       passwordHash: passwordHash,
       streak: 0,
-      coins: 0,
+      coins: 10,
+      lastSignIn: new Date(),
     });
 
-    return user ? user.toObject() : null;
+    return user ? { ...user.toObject() } : null;
   }
 
   async getUser(username: string) {
@@ -28,11 +29,7 @@ export class MongoDbManager implements DbManager {
   }
 
   async updateUser(username: string, body: any) {
-    console.log(body);
-    const user = await UserModel.updateOne(
-      { username: username },
-      { $set: body }
-    );
+    const user = await UserModel.updateOne({ username: username }, { $set: body });
 
     if (!user || user.modifiedCount == 0) {
       throw new Error();

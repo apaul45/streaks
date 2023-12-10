@@ -1,12 +1,19 @@
 import express from "express";
 import dotenv from "dotenv";
 import { router } from "./routes";
+import cors from "cors";
 
 dotenv.config();
+const port = process.env.PORT;
 
 const app = express();
 
-const port = process.env.PORT;
+app.use(
+  cors({
+    credentials: true,
+    origin: "http://127.0.0.1:5173",
+  })
+);
 
 app.use(express.json({ limit: "100mb" }));
 
