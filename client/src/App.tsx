@@ -1,35 +1,55 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState } from "react";
+import "./App.css";
+import { login, register, update } from "./api";
+import { User } from "./types";
+import { NavigationBar, PopupDialog, UserDialog } from "./components";
+import { BONUS, DAYS_FOR_BONUS, determineDays } from "./utils";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [user, setUser] = useState<User | null>(null);
+
+  const handleRegister = async (username: string, password: string) => {
+    const res = await register({ username, password });
+    setUser(res.data);
+  };
+
+  const handleLogin = async (username: string, password: string) => {
+    const res = await login({ username, password });
+    let signedInUser = res.data;
+
+    const days = determineDays(signedInUser?.lastSignIn as string);
+
+    if (days >= 1) {
+      // @ts-ignore
+      signedInUser.streak = days == 1 ? user.streak + 1 : 0;
+
+      const reachedBonus = signedInUser.streak > 0 && signedInUser.streak % DAYS_FOR_BONUS == 0;
+      signedInUser.coins += reachedBonus ? BONUS : 0;
+
+      await update(signedInUser?.username as string, { ...signedInUser });
+    }
+
+    setUser(signedInUser);
+  };
+
+  const handleUpdate = async (changes: any) => {
+    const res = await update(user?.username as string, changes);
+
+    if (res.status == 200) setUser({ ...user, ...changes } as User);
+  };
 
   return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <div className="h-screen">
+      <NavigationBar
+        user={user}
+        handleLogin={(username: string, password: string) => handleLogin(username, password)}
+        handleRegister={(username: string, password: string) => handleRegister(username, password)}
+      />
+      <br />
+
+      {user && <UserDialog user={user} updateUser={(changes: any) => handleUpdate(changes)} />}
+    </div>
+  );
 }
 
-export default App
+export default App;
